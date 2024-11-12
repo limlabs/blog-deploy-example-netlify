@@ -21,7 +21,7 @@ const localStorageProvider: MediaStorageProvider = {
 
 const blobStorageProvider: MediaStorageProvider = {
   upload: async function (destinationPath: string, data: Buffer) {
-    const store = getStore('media');
+    const store = getStore(process.env.BLOB_STORE_NAME ?? '');
 
     // Upload the image data to the S3 bucket
     await store.set(destinationPath, data);
@@ -32,7 +32,7 @@ const blobStorageProvider: MediaStorageProvider = {
   },
 };
 
-const defaultStorageProvider = process.env.BUCKET_NAME
+const defaultStorageProvider = process.env.BLOB_STORE_NAME
   ? blobStorageProvider
   : localStorageProvider;
 export const media = defaultStorageProvider;
