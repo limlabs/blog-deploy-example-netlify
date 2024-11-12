@@ -45,7 +45,7 @@ const blobStorageProvider: MediaStorageProvider = {
     });
 
     return {
-      url: `/api/images?path=${encodeURIComponent(destinationPath)}`,
+      url: `/images?key=${encodeURIComponent(destinationPath)}`,
     };
   },
 };
