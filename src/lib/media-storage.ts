@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { getStore } from "@netlify/blobs"
 
 export interface MediaStorageProvider {
   upload: (destinationPath: string, data: Buffer) => Promise<{ url: string }>;
@@ -21,18 +21,13 @@ const localStorageProvider: MediaStorageProvider = {
 
 const blobStorageProvider: MediaStorageProvider = {
   upload: async function (destinationPath: string, data: Buffer) {
-    const s3 = new S3Client({});
+    const store = getStore('media');
 
     // Upload the image data to the S3 bucket
-    await s3.send(new PutObjectCommand({
-      Bucket: process.env.BUCKET_NAME,
-      Key: destinationPath,
-      Body: data,
-      ACL: "public-read",
-    }));
+    await store.set(destinationPath, data);
 
     return {
-      url: `https://${process.env.BUCKET_NAME}.fly.storage.tigris.dev/${destinationPath}`,
+      url: `/media/${destinationPath}`,
     };
   },
 };

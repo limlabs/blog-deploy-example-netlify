@@ -8,14 +8,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "5mb",
     },
   },
-  images: {
-    remotePatterns: [{
-      protocol: "https",
-      hostname: `*.storage.tigris.dev`,
-      port: "",
-      pathname: "/**",
-    }]
-  },
 };
 
 export default nextConfig;
