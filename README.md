@@ -1,63 +1,32 @@
-# NextJS fly.io Deployment Example
+# NextJS Netlify Deployment Example
 
-This example shows how to create a simple blog with Postgres and Object Storage for uploads using fly.io and Tigris.
+This example shows how to create a simple blog with Postgres and Blob Storage for uploads using Netlify and Prisma.
 
-## 1. Deploy the app
+## 1. Create a Prisma database
+
+Netlify doesn't offer a Postgres database, or any relational databases. Instead we will use Primsa's new Postgres feature, but any Postgres database will work for this setup.
+
+1. Go to https://console.prisma.io/
+2. Create a new database
+3. Copy the credentials somewhere safe / local (we will use them in the next step)
+
+## 2. Deploy the app
 
 1. Clone this repo
-1. Install the fly cli (`brew install flyctl` on macOS)
-1. In a new terminal, run `flyctl login` if you have an account, `flyctl signup` if you need to create one
-1. Make sure you are in the example directory `cd fly.io`
-1. Run `fly launch` and pick the defaults
-1. Once you deploy, you can visit the URL given by `flyctl`. 
-
-Everything should _almost_ work. However, you'll notice that images aren't displaying though. Let's fix that!
-
-## 2. Allow public access to uploads
-
-1. Go to the https://fly.io dashboard and navigate to the `Tigris Object Storage` item
-2. Click the link to the bucket connected to your app (your app name will be listed to the right of the bucket)
-3. This will redirect you to Tigris. From there, select your bucket again.
-4. Click on the Settings link in the top-right
-5. In the dropdown for Public / Private access, change it to "Public"
-6. Click "Save"
-
-Now you should be able to see images you previously uploaded, as well as new ones, alongside your posts!
-
-## 3. Create a CI/CD Pipeline
-
-Now we will create a simple deployment pipeline that uses GitHub Actions to deploy to fly.io on each push to the `main` branch.
-
-1. Run the following command to generate a fly API token for your app:
-
+2. Push it to your own GitHub account
+3. Go to https://app.netlify.com/ and choose "Import Repository"
+4. Select the repo you just pushed
+5. In the configuration section, add the environment variables from Step 1 (`DATABASE_URL` and `PULSE_API_KEY`)
+6. Add an additional environment variable:
+  
     ```
-    fly tokens create deploy -x 999999h
+    BLOB_STORE_NAME=media
     ```
 
-1. Push your copy of this repo to GitHub as a new repo if you haven't already
-1. In your GitHub repository settings page, click on "Secrets and Variables --> Actions"
-1. Add the secret as `FLY_API_TOKEN` and save
-1. Locally, add the following content to `.github/workflows/deploy.yml`:
+    This is used by our NextJS App to store and retrieve cover image uploads from Netlify's blob store.
 
+    We also include a very simple image API endpoint to proxy the blobs through a NextJS route handler (see [`src/app/images/route.ts`](./src/app/images/route.ts) for details).
 
-      ```yml
-      name: Fly Deploy
-      on:
-        push:
-          branches:
-            - main
-      jobs:
-        deploy:
-          name: Deploy app
-          runs-on: ubuntu-latest
-          steps:
-            - uses: actions/checkout@v4
-            - uses: superfly/flyctl-actions/setup-flyctl@master
-            - run: flyctl deploy --remote-only
-              env:
-                FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      ```
+7. Click deploy
 
-1. Commit the new file and push to `main`
-
-You're done. Your deployment should kick off automatically in GitHub actions.
+You're done! Now you should have a NextJS app with Postgres and File upload support running on Netlify.
